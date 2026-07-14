@@ -88,6 +88,7 @@ const els = {
   settingsBtn:$('settingsBtn'), topicInput:$('topicInput'), gradeSelect:$('gradeSelect'),
   coreTruthInput:$('coreTruthInput'), generateBtn:$('generateBtn'),
   videoTitle:$('videoTitle'), videoUrl:$('videoUrl'), videoDesc:$('videoDesc'),
+  clearVideoBtn:$('clearVideoBtn'),
   templateGrid:$('templateGrid'),
   previewStatus:$('previewStatus'), previewArea:$('previewArea'),
   emptyState:$('emptyState'), markdownBody:$('markdownBody'),
@@ -414,6 +415,12 @@ els.saveBtn.onclick = saveCourse;
 els.exportBtn.onclick = exportDocx;
 els.copyBtn.onclick = () => { if (state.currentLesson) { navigator.clipboard.writeText(state.currentLesson); showToast('已复制'); } };
 els.navToggle.onclick = () => els.sidebar.classList.toggle('collapsed');
+els.clearVideoBtn.onclick = () => {
+  els.videoTitle.value = '';
+  els.videoUrl.value = '';
+  els.videoDesc.value = '';
+  showToast('已清除视频素材');
+};
 
 // ---- Init ----
 loadTemplates();
