@@ -133,6 +133,43 @@ async function callDeepSeek(messages, options = {}) {
   return data.choices[0].message.content;
 }
 
+// ---- 生成历史追踪 ----
+const ANGLES_STORAGE = 'lp_angles';
+
+function getUsedAngles() {
+  try { return JSON.parse(localStorage.getItem(ANGLES_STORAGE) || '{}'); }
+  catch { return {}; }
+}
+
+function saveAngles(topic, content) {
+  const angles = getUsedAngles();
+  if (!angles[topic]) angles[topic] = [];
+  const goldMatch = content.match(/核心金句[：:](.+)/);
+  const examples = content.match(/举例[：:](.+)/g) || [];
+  const entry = {
+    gold: goldMatch ? goldMatch[1].trim() : '',
+    examples: examples.slice(0, 3).map(e => e.replace(/举例[：:]/, '').trim()),
+    time: Date.now(),
+  };
+  angles[topic].push(entry);
+  if (angles[topic].length > 5) angles[topic] = angles[topic].slice(-5);
+  localStorage.setItem(ANGLES_STORAGE, JSON.stringify(angles));
+}
+
+function buildAvoidContext(topic) {
+  const angles = getUsedAngles();
+  const history = angles[topic];
+  if (!history || history.length === 0) return '';
+  let ctx = '\n\n⚠️ 你之前为这个主题生成过以下版本，请用完全不同的切入角度和例子，避免重复：\n';
+  history.forEach((h, i) => {
+    ctx += `\n版本${i + 1}：`;
+    if (h.gold) ctx += `\n  金句：「${h.gold}」`;
+    if (h.examples.length) ctx += `\n  曾用例子：${h.examples.join('、')}`;
+  });
+  ctx += `\n\n请换一个全新的视角，用不同的人、不同的故事、不同的道理来讲解同一个主题。`;
+  return ctx;
+}
+
 // ---- Generate ----
 async function generateLesson() {
   const topic = els.topicInput.value.trim();
@@ -146,7 +183,9 @@ async function generateLesson() {
     const body = { topic, grade: els.gradeSelect.value, core_truth: els.coreTruthInput.value.trim() };
     if (els.videoTitle.textContent) body.video_info = `${els.videoTitle.textContent}`;
 
-    const userPrompt = `请为我设计一节心性教育课程：\n主题：${body.topic}\n${body.grade ? `目标学生：${body.grade}` : ''}\n${body.core_truth ? `核心道理：${body.core_truth}` : ''}\n${body.video_info ? `引入视频：${body.video_info}` : ''}\n\n请用 Markdown 格式输出，严格按照结构，每个大段落用二级标题。`;
+    const avoidCtx = buildAvoidContext(topic);
+
+    const userPrompt = `请为我设计一节心性教育课程：\n主题：${body.topic}\n${body.grade ? `目标学生：${body.grade}` : ''}\n${body.core_truth ? `核心道理：${body.core_truth}` : ''}\n${body.video_info ? `引入视频：${body.video_info}` : ''}${avoidCtx}\n\n请用 Markdown 格式输出，严格按照结构，每个大段落用二级标题。`;
 
     const content = await callDeepSeek([
       { role: 'system', content: SYSTEM_PROMPT },
@@ -157,8 +196,11 @@ async function generateLesson() {
       state.currentLesson = content;
       state.currentTheme = topic;
       renderPreview(content);
-      els.previewStatus.textContent = `已生成：${topic}`;
-      showToast('课程生成成功！');
+      saveAngles(topic, content);
+      const angles = getUsedAngles();
+      const count = angles[topic]?.length || 1;
+      els.previewStatus.textContent = `已生成：${topic}（第${count}版）`;
+      showToast(`生成成功！已自动避免前${count > 1 ? count - 1 : 0}版的重复`);
     }
   } catch (err) {
     showToast('生成失败：' + err.message);
