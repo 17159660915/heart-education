@@ -216,6 +216,17 @@ async function generateLesson() {
   }
 }
 
+// ---- 提取调整摘要 ----
+function extractChangeHint(msg) {
+  if (msg.includes('例子') || msg.includes('举例')) return '，已更换新例子';
+  if (msg.includes('金句')) return '，已更新金句';
+  if (msg.includes('深度') || msg.includes('语言')) return '，已调整语言深度';
+  if (msg.includes('互动')) return '，已增加互动环节';
+  if (msg.includes('视频')) return '，已更新视频素材';
+  if (msg.includes('更') || msg.includes('换')) return '，已按你的要求修改';
+  return '';
+}
+
 // ---- Chat ----
 async function sendChatMessage() {
   const msg = els.chatInput.value.trim();
@@ -237,11 +248,16 @@ async function sendChatMessage() {
     typing.remove();
     if (content) {
       state.chatHistory.push({ role: 'assistant', content });
-      addChatMessage(content, 'assistant');
       if (content.includes('# ') && content.length > 200) {
+        // 完整课程内容 → 显示在中间预览区
         state.currentLesson = content;
         renderPreview(content);
-        showToast('课程已更新');
+        // 聊天框只回一句简洁确认
+        const changeHint = extractChangeHint(msg);
+        addChatMessage(`✅ 调整完毕${changeHint}，已更新到预览区`, 'assistant');
+      } else {
+        // 简短回复 → 正常显示在聊天框
+        addChatMessage(content, 'assistant');
       }
     }
   } catch (err) {
