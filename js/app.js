@@ -424,12 +424,14 @@ els.clearVideoBtn.onclick = () => {
 };
 
 // ---- Init ----
-document.addEventListener('DOMContentLoaded', () => {
-  loadTemplates();
+(function() {
+  try {
+    loadTemplates();
+  } catch(e) { console.error('模板加载:', e); }
   if (!getApiKey()) {
-    setTimeout(showApiKeyModal, 500);
+    setTimeout(showApiKeyModal, 200);
   } else {
     hideApiKeyModal();
   }
   showToast('欢迎使用心性教育课程策划系统！');
-});
+})();
