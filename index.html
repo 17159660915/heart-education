@@ -73,16 +73,14 @@
       </div>
 
       <div class="sidebar-section">
-        <div class="section-label">引入视频</div>
-        <div class="row">
-          <input type="text" class="input" id="videoKeyword" placeholder="搜索关键词..." />
-          <button class="btn btn-ghost btn-sm" id="searchVideoBtn">🔍</button>
+        <div class="section-label" style="display:flex;justify-content:space-between;align-items:center">
+          <span>引入视频素材</span>
+          <button class="btn-text btn-sm" id="clearVideoBtn" title="清除视频素材">✕ 清除</button>
         </div>
-        <div class="video-selected" id="videoSelected" style="display:none">
-          <div class="video-title" id="videoTitle"></div>
-          <div class="video-duration" id="videoDuration"></div>
-        </div>
-        <div class="video-results" id="videoResults"></div>
+        <p class="modal-hint" style="margin-bottom:8px">观看视频后，把视频信息填给AI用</p>
+        <input type="text" class="input" id="videoTitle" placeholder="视频名称，例：《礼物》(The Present)" />
+        <input type="text" class="input" id="videoUrl" placeholder="视频链接（可选）" style="margin-top:6px" />
+        <textarea class="textarea" id="videoDesc" rows="2" placeholder="视频内容简介 / 你从中提炼的关键词..." style="margin-top:6px"></textarea>
       </div>
 
       <div class="sidebar-section">
