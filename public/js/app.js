@@ -31,8 +31,8 @@ const SYSTEM_PROMPT = `你是一位专注于心性教育的课程策划专家。
 - 时长：约60分钟
 
 二、引入视频
-根据主题推荐1-2个适合的引入视频，提供名称、链接、简介。
-观看前引导问题（1-2个），观看后破冰提问（1个）。
+用户会提供引入视频素材（名称、链接、简介），基于此设计观看前引导问题（1-2个）和观看后破冰提问（1个）。
+如果用户未提供视频，则根据主题自行推荐一个合适的短视频。
 
 三、核心讲解（递进四层）
 第一层 · 现象层「我们看到了什么」
@@ -87,9 +87,8 @@ const els = {
   apiKeyModal:$('apiKeyModal'), apiKeyInput:$('apiKeyInput'), saveApiKeyBtn:$('saveApiKeyBtn'),
   settingsBtn:$('settingsBtn'), topicInput:$('topicInput'), gradeSelect:$('gradeSelect'),
   coreTruthInput:$('coreTruthInput'), generateBtn:$('generateBtn'),
-  videoKeyword:$('videoKeyword'), searchVideoBtn:$('searchVideoBtn'),
-  videoSelected:$('videoSelected'), videoTitle:$('videoTitle'), videoDuration:$('videoDuration'),
-  videoResults:$('videoResults'), templateGrid:$('templateGrid'),
+  videoTitle:$('videoTitle'), videoUrl:$('videoUrl'), videoDesc:$('videoDesc'),
+  templateGrid:$('templateGrid'),
   previewStatus:$('previewStatus'), previewArea:$('previewArea'),
   emptyState:$('emptyState'), markdownBody:$('markdownBody'),
   chatMessages:$('chatMessages'), chatInput:$('chatInput'), sendChatBtn:$('sendChatBtn'),
@@ -181,7 +180,15 @@ async function generateLesson() {
 
   try {
     const body = { topic, grade: els.gradeSelect.value, core_truth: els.coreTruthInput.value.trim() };
-    if (els.videoTitle.textContent) body.video_info = `${els.videoTitle.textContent}`;
+    // 视频素材
+    const vTitle = els.videoTitle.value.trim();
+    const vUrl = els.videoUrl.value.trim();
+    const vDesc = els.videoDesc.value.trim();
+    if (vTitle) {
+      body.video_info = vTitle;
+      if (vUrl) body.video_info += ` ${vUrl}`;
+      if (vDesc) body.video_info += ` - ${vDesc}`;
+    }
 
     const avoidCtx = buildAvoidContext(topic);
 
@@ -244,61 +251,7 @@ async function sendChatMessage() {
 }
 
 // ---- Video Search ----
-async function searchVideos() {
-  const kw = els.videoKeyword.value.trim();
-  if (!kw) { showToast('请输入搜索关键词'); return; }
-  els.videoResults.innerHTML = '<div style="padding:12px;color:#666;font-size:13px">搜索中...</div>';
-  try {
-    // 使用 CORS 代理访问 B站搜索
-    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://search.bilibili.com/all?keyword=${encodeURIComponent(kw)}`)}`;
-    const resp = await fetch(proxyUrl);
-    const html = await resp.text();
-    const videos = [];
-    const re = /<a[^>]*title="([^"]+)"[^>]*href="(\/\/www\.bilibili\.com\/video\/[A-Za-z0-9]+)/g;
-    const seen = new Set(); let m;
-    while ((m = re.exec(html)) !== null && videos.length < 5) {
-      const title = m[1], link = 'https:' + m[2];
-      if (!seen.has(link) && title.length > 4) { seen.add(link); videos.push({ title, link, duration:'?' }); }
-    }
-    if (videos.length) {
-      els.videoResults.innerHTML = videos.map(v =>
-        `<div class="video-item" data-url="${v.link}" data-title="${escapeHtml(v.title)}" data-dur="${v.duration}">
-          <div class="v-title">${escapeHtml(v.title)}</div>
-          <div class="v-meta">点击选择 · <a href="${v.link}" target="_blank" onclick="event.stopPropagation()">去B站观看</a></div>
-        </div>`).join('');
-      els.videoResults.querySelectorAll('.video-item').forEach(item => {
-        item.onclick = () => selectVideo(item.dataset.title, item.dataset.dur, item.dataset.url);
-      });
-    } else {
-      // 搜索失败，提供直接跳转链接
-      els.videoResults.innerHTML = `<div style="padding:12px;font-size:13px">
-        <div style="color:#666;margin-bottom:8px">无法直接搜索B站</div>
-        <a href="https://search.bilibili.com/all?keyword=${encodeURIComponent(kw)}" target="_blank" 
-           style="color:#2980b9;text-decoration:none;font-weight:600">
-           🔗 点击在B站搜索「${escapeHtml(kw)}」
-        </a>
-      </div>`;
-    }
-  } catch {
-    // 网络错误，提供直接跳转
-    els.videoResults.innerHTML = `<div style="padding:12px;font-size:13px">
-      <div style="color:#666;margin-bottom:8px">网络连接失败</div>
-      <a href="https://search.bilibili.com/all?keyword=${encodeURIComponent(kw)}" target="_blank"
-         style="color:#2980b9;text-decoration:none;font-weight:600">
-        🔗 点击在B站搜索「${escapeHtml(kw)}」
-      </a>
-    </div>`;
-  }
-}
-
-function selectVideo(title, dur, url) {
-  els.videoTitle.textContent = title;
-  els.videoDuration.textContent = dur;
-  els.videoSelected.style.display = 'block';
-  els.videoResults.innerHTML = '';
-  els.videoKeyword.value = '';
-  showToast('已选择视频');
-}
+// 已移除：改为手动输入视频素材
 
 // ---- Templates ----
 function loadTemplates() {
@@ -316,7 +269,9 @@ function applyTemplate(id) {
   if (!t) return;
   els.topicInput.value = t.defaults.theme || '';
   els.coreTruthInput.value = t.defaults.core_truth || '';
-  if (t.defaults.video_title) selectVideo(t.defaults.video_title, t.defaults.video_duration || '', t.defaults.video_url || '');
+  els.videoTitle.value = t.defaults.video_title || '';
+  els.videoUrl.value = t.defaults.video_url || '';
+  els.videoDesc.value = t.defaults.video_desc || '';
   els.templateGrid.querySelectorAll('.template-card').forEach(c => c.classList.remove('active'));
   els.templateGrid.querySelector(`[data-id="${id}"]`)?.classList.add('active');
   showToast(`已应用模板：${t.name}`);
@@ -412,7 +367,7 @@ function escapeHtml(t) { const d = document.createElement('div'); d.textContent 
 function newCourse() {
   state.currentLesson = ''; state.currentTheme = ''; state.chatHistory = [];
   els.topicInput.value = ''; els.coreTruthInput.value = '';
-  els.videoTitle.textContent = ''; els.videoDuration.textContent = ''; els.videoSelected.style.display = 'none';
+  els.videoTitle.value = ''; els.videoUrl.value = ''; els.videoDesc.value = '';
   els.emptyState.style.display = 'flex'; els.markdownBody.style.display = 'none'; els.markdownBody.innerHTML = '';
   els.previewStatus.textContent = '等待生成...';
   els.chatMessages.innerHTML = '<div class="chat-msg ai"><div class="msg-bubble">你好！我是你的课程策划助手。</div></div>';
@@ -435,8 +390,6 @@ els.settingsBtn.onclick = () => {
 };
 els.generateBtn.onclick = generateLesson;
 els.topicInput.onkeydown = e => { if (e.key === 'Enter') generateLesson(); };
-els.searchVideoBtn.onclick = searchVideos;
-els.videoKeyword.onkeydown = e => { if (e.key === 'Enter') searchVideos(); };
 els.sendChatBtn.onclick = sendChatMessage;
 els.chatInput.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(); } };
 els.clearChatBtn.onclick = () => { state.chatHistory = []; els.chatMessages.innerHTML = '<div class="chat-msg ai"><div class="msg-bubble">对话已清空</div></div>'; };
