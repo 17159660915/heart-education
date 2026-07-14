@@ -207,7 +207,9 @@ async function searchVideos() {
   if (!kw) { showToast('请输入搜索关键词'); return; }
   els.videoResults.innerHTML = '<div style="padding:12px;color:#666;font-size:13px">搜索中...</div>';
   try {
-    const resp = await fetch(`https://search.bilibili.com/all?keyword=${encodeURIComponent(kw)}`);
+    // 使用 CORS 代理访问 B站搜索
+    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://search.bilibili.com/all?keyword=${encodeURIComponent(kw)}`)}`;
+    const resp = await fetch(proxyUrl);
     const html = await resp.text();
     const videos = [];
     const re = /<a[^>]*title="([^"]+)"[^>]*href="(\/\/www\.bilibili\.com\/video\/[A-Za-z0-9]+)/g;
@@ -219,16 +221,31 @@ async function searchVideos() {
     if (videos.length) {
       els.videoResults.innerHTML = videos.map(v =>
         `<div class="video-item" data-url="${v.link}" data-title="${escapeHtml(v.title)}" data-dur="${v.duration}">
-          <div class="v-title">${escapeHtml(v.title)}</div><div class="v-meta">时长: ${v.duration}</div>
+          <div class="v-title">${escapeHtml(v.title)}</div>
+          <div class="v-meta">点击选择 · <a href="${v.link}" target="_blank" onclick="event.stopPropagation()">去B站观看</a></div>
         </div>`).join('');
       els.videoResults.querySelectorAll('.video-item').forEach(item => {
         item.onclick = () => selectVideo(item.dataset.title, item.dataset.dur, item.dataset.url);
       });
     } else {
-      els.videoResults.innerHTML = '<div style="padding:12px;color:#999;font-size:13px">未找到相关视频</div>';
+      // 搜索失败，提供直接跳转链接
+      els.videoResults.innerHTML = `<div style="padding:12px;font-size:13px">
+        <div style="color:#666;margin-bottom:8px">无法直接搜索B站</div>
+        <a href="https://search.bilibili.com/all?keyword=${encodeURIComponent(kw)}" target="_blank" 
+           style="color:#2980b9;text-decoration:none;font-weight:600">
+           🔗 点击在B站搜索「${escapeHtml(kw)}」
+        </a>
+      </div>`;
     }
   } catch {
-    els.videoResults.innerHTML = '<div style="padding:12px;color:#c0392b;font-size:13px">搜索失败（可能需要翻墙）</div>';
+    // 网络错误，提供直接跳转
+    els.videoResults.innerHTML = `<div style="padding:12px;font-size:13px">
+      <div style="color:#666;margin-bottom:8px">网络连接失败</div>
+      <a href="https://search.bilibili.com/all?keyword=${encodeURIComponent(kw)}" target="_blank"
+         style="color:#2980b9;text-decoration:none;font-weight:600">
+        🔗 点击在B站搜索「${escapeHtml(kw)}」
+      </a>
+    </div>`;
   }
 }
 
