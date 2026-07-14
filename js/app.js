@@ -424,10 +424,12 @@ els.clearVideoBtn.onclick = () => {
 };
 
 // ---- Init ----
-loadTemplates();
-if (!getApiKey()) {
-  setTimeout(showApiKeyModal, 500);
-} else {
-  hideApiKeyModal();
-}
-showToast('欢迎使用心性教育课程策划系统！');
+document.addEventListener('DOMContentLoaded', () => {
+  loadTemplates();
+  if (!getApiKey()) {
+    setTimeout(showApiKeyModal, 500);
+  } else {
+    hideApiKeyModal();
+  }
+  showToast('欢迎使用心性教育课程策划系统！');
+});
