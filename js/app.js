@@ -6,18 +6,22 @@ const DEEPSEEK_BASE = 'https://api.deepseek.com/v1';
 const API_KEY_STORAGE = 'lp_api_key';
 const HISTORY_STORAGE = 'lp_history';
 const TEMPLATES = [
-  { id:'character', name:'品德与修养', icon:'❤️', description:'以《礼物》视频引入，探讨善良、同理心、接纳不完美',
-    defaults:{ theme:'品德与修养——真正的「礼物」', subtitle:'我们每个人都是礼物，只是有些礼物包装得不太一样', core_truth:'品德不是挂在嘴上的漂亮话，而是体现在我们如何对待那些「不一样」的人和生命', video_title:'《礼物》(The Present)', video_url:'https://www.bilibili.com/video/BV1gs411R7dE/', video_duration:'4分35秒', video_desc:'一个沉迷游戏的男孩，收到妈妈送的礼物——一只三条腿的小狗。他起初嫌弃，最终被小狗的热情打动，站起来走出门时，我们发现他自己也装着义肢。', pre_questions:['注意看男孩收到礼物后表情和态度发生了什么变化？','小狗有什么「不一样」的地方？'], post_question:'看完短片，你觉得标题「礼物」——到底什么才是真正的礼物？' } },
+  { id:'character', name:'品德与修养', icon:'❤️', description:'探讨善良、同理心、接纳不完美',
+    defaults:{ theme:'品德与修养——真正的「礼物」', subtitle:'我们每个人都是礼物，只是有些礼物包装得不太一样', core_truth:'品德不是挂在嘴上的漂亮话，而是体现在我们如何对待那些「不一样」的人和生命' } },
   { id:'honesty', name:'诚信的力量', icon:'⚖️', description:'探讨诚实与信任的价值',
-    defaults:{ theme:'诚信的力量', subtitle:'诚实是立身之本，信任是人际之桥', core_truth:'诚信不是一种口号，而是每一次选择中，你选择说真话、做真事', pre_questions:['你遇到过需要说真话但很难开口的时刻吗？'], post_question:'如果我们选择诚信，可能会付出什么代价？这个代价值得吗？' } },
+    defaults:{ theme:'诚信的力量', subtitle:'诚实是立身之本，信任是人际之桥', core_truth:'诚信不是一种口号，而是每一次选择中，你选择说真话、做真事' } },
   { id:'perseverance', name:'逆境中的坚持', icon:'💪', description:'面对困难不放弃，坚持的力量',
-    defaults:{ theme:'逆境中的坚持', subtitle:'真正的坚持不是硬扛，而是心中有光', core_truth:'坚持不是因为看到了希望才坚持，而是因为坚持了才看到希望', pre_questions:['你有过坚持做一件事最后成功的经历吗？'], post_question:'当坚持很难的时候，是什么让你继续下去的？' } },
+    defaults:{ theme:'逆境中的坚持', subtitle:'真正的坚持不是硬扛，而是心中有光', core_truth:'坚持不是因为看到了希望才坚持，而是因为坚持了才看到希望' } },
   { id:'gratitude', name:'感恩之心', icon:'🙏', description:'学会感恩，珍惜身边的一切',
-    defaults:{ theme:'感恩之心', subtitle:'滴水之恩，当涌泉相报', core_truth:'感恩是一种看见——看见别人对自己的好，并且珍惜', pre_questions:['你能说出三个你最想感谢的人吗？'], post_question:'你有多久没有对帮助过你的人说一声「谢谢」了？' } },
+    defaults:{ theme:'感恩之心', subtitle:'滴水之恩，当涌泉相报', core_truth:'感恩是一种看见——看见别人对自己的好，并且珍惜' } },
   { id:'dream', name:'梦想与追求', icon:'⭐', description:'引导学生树立目标，追逐梦想',
-    defaults:{ theme:'梦想与追求', subtitle:'心中有梦想，脚下有力量', core_truth:'梦想不是遥不可及的幻想，而是你愿意每天多做一点的事', pre_questions:['你的梦想是什么？为什么？'], post_question:'为了梦想，你愿意做出什么样的努力？' } },
+    defaults:{ theme:'梦想与追求', subtitle:'心中有梦想，脚下有力量', core_truth:'梦想不是遥不可及的幻想，而是你愿意每天多做一点的事' } },
   { id:'respect', name:'尊重与包容', icon:'🤝', description:'学会尊重差异，包容不同',
-    defaults:{ theme:'尊重与包容', subtitle:'君子和而不同', core_truth:'尊重不是只对和自己一样的人友善，而是对和自己不一样的人也能包容', pre_questions:['你觉得班上有没有特别「不一样」的同学？'], post_question:'什么是真正的「尊重」？是礼貌地说「你好」，还是……？' } },
+    defaults:{ theme:'尊重与包容', subtitle:'君子和而不同', core_truth:'尊重不是只对和自己一样的人友善，而是对和自己不一样的人也能包容' } },
+  { id:'responsibility', name:'责任与担当', icon:'🎯', description:'培养责任心，学会承担',
+    defaults:{ theme:'责任与担当', subtitle:'能力越大，责任越大', core_truth:'责任不是被强加的负担，而是你对自己和他人的一种承诺' } },
+  { id:'selfdiscipline', name:'自律与自由', icon:'🔑', description:'懂得自律，才能真正自由',
+    defaults:{ theme:'自律与自由', subtitle:'真正的自由，不是随心所欲，而是自我主宰', core_truth:'自律不是束缚，而是让你拥有选择的能力和底气' } },
 ];
 
 const SYSTEM_PROMPT = `你是一位专注于心性教育的课程策划专家。你的任务是帮助老师设计给中小学生上的心性教育课程（约60分钟）。
@@ -31,8 +35,8 @@ const SYSTEM_PROMPT = `你是一位专注于心性教育的课程策划专家。
 - 时长：约60分钟
 
 二、引入视频
-根据主题推荐1-2个适合的引入视频，提供名称、链接、简介。
-观看前引导问题（1-2个），观看后破冰提问（1个）。
+用户会提供引入视频素材（名称、链接、简介），基于此设计观看前引导问题（1-2个）和观看后破冰提问（1个）。
+如果用户未提供视频，则根据主题自行推荐一个合适的短视频。
 
 三、核心讲解（递进四层）
 第一层 · 现象层「我们看到了什么」
@@ -87,9 +91,9 @@ const els = {
   apiKeyModal:$('apiKeyModal'), apiKeyInput:$('apiKeyInput'), saveApiKeyBtn:$('saveApiKeyBtn'),
   settingsBtn:$('settingsBtn'), topicInput:$('topicInput'), gradeSelect:$('gradeSelect'),
   coreTruthInput:$('coreTruthInput'), generateBtn:$('generateBtn'),
-  videoKeyword:$('videoKeyword'), searchVideoBtn:$('searchVideoBtn'),
-  videoSelected:$('videoSelected'), videoTitle:$('videoTitle'), videoDuration:$('videoDuration'),
-  videoResults:$('videoResults'), templateGrid:$('templateGrid'),
+  videoTitle:$('videoTitle'), videoUrl:$('videoUrl'), videoDesc:$('videoDesc'),
+  clearVideoBtn:$('clearVideoBtn'),
+  templateGrid:$('templateGrid'),
   previewStatus:$('previewStatus'), previewArea:$('previewArea'),
   emptyState:$('emptyState'), markdownBody:$('markdownBody'),
   chatMessages:$('chatMessages'), chatInput:$('chatInput'), sendChatBtn:$('sendChatBtn'),
@@ -133,6 +137,43 @@ async function callDeepSeek(messages, options = {}) {
   return data.choices[0].message.content;
 }
 
+// ---- 生成历史追踪 ----
+const ANGLES_STORAGE = 'lp_angles';
+
+function getUsedAngles() {
+  try { return JSON.parse(localStorage.getItem(ANGLES_STORAGE) || '{}'); }
+  catch { return {}; }
+}
+
+function saveAngles(topic, content) {
+  const angles = getUsedAngles();
+  if (!angles[topic]) angles[topic] = [];
+  const goldMatch = content.match(/核心金句[：:](.+)/);
+  const examples = content.match(/举例[：:](.+)/g) || [];
+  const entry = {
+    gold: goldMatch ? goldMatch[1].trim() : '',
+    examples: examples.slice(0, 3).map(e => e.replace(/举例[：:]/, '').trim()),
+    time: Date.now(),
+  };
+  angles[topic].push(entry);
+  if (angles[topic].length > 5) angles[topic] = angles[topic].slice(-5);
+  localStorage.setItem(ANGLES_STORAGE, JSON.stringify(angles));
+}
+
+function buildAvoidContext(topic) {
+  const angles = getUsedAngles();
+  const history = angles[topic];
+  if (!history || history.length === 0) return '';
+  let ctx = '\n\n⚠️ 你之前为这个主题生成过以下版本，请用完全不同的切入角度和例子，避免重复：\n';
+  history.forEach((h, i) => {
+    ctx += `\n版本${i + 1}：`;
+    if (h.gold) ctx += `\n  金句：「${h.gold}」`;
+    if (h.examples.length) ctx += `\n  曾用例子：${h.examples.join('、')}`;
+  });
+  ctx += `\n\n请换一个全新的视角，用不同的人、不同的故事、不同的道理来讲解同一个主题。`;
+  return ctx;
+}
+
 // ---- Generate ----
 async function generateLesson() {
   const topic = els.topicInput.value.trim();
@@ -144,9 +185,19 @@ async function generateLesson() {
 
   try {
     const body = { topic, grade: els.gradeSelect.value, core_truth: els.coreTruthInput.value.trim() };
-    if (els.videoTitle.textContent) body.video_info = `${els.videoTitle.textContent}`;
+    // 视频素材
+    const vTitle = els.videoTitle.value.trim();
+    const vUrl = els.videoUrl.value.trim();
+    const vDesc = els.videoDesc.value.trim();
+    if (vTitle) {
+      body.video_info = vTitle;
+      if (vUrl) body.video_info += ` ${vUrl}`;
+      if (vDesc) body.video_info += ` - ${vDesc}`;
+    }
 
-    const userPrompt = `请为我设计一节心性教育课程：\n主题：${body.topic}\n${body.grade ? `目标学生：${body.grade}` : ''}\n${body.core_truth ? `核心道理：${body.core_truth}` : ''}\n${body.video_info ? `引入视频：${body.video_info}` : ''}\n\n请用 Markdown 格式输出，严格按照结构，每个大段落用二级标题。`;
+    const avoidCtx = buildAvoidContext(topic);
+
+    const userPrompt = `请为我设计一节心性教育课程：\n主题：${body.topic}\n${body.grade ? `目标学生：${body.grade}` : ''}\n${body.core_truth ? `核心道理：${body.core_truth}` : ''}\n${body.video_info ? `引入视频：${body.video_info}` : ''}${avoidCtx}\n\n请用 Markdown 格式输出，严格按照结构，每个大段落用二级标题。`;
 
     const content = await callDeepSeek([
       { role: 'system', content: SYSTEM_PROMPT },
@@ -157,14 +208,28 @@ async function generateLesson() {
       state.currentLesson = content;
       state.currentTheme = topic;
       renderPreview(content);
-      els.previewStatus.textContent = `已生成：${topic}`;
-      showToast('课程生成成功！');
+      saveAngles(topic, content);
+      const angles = getUsedAngles();
+      const count = angles[topic]?.length || 1;
+      els.previewStatus.textContent = `已生成：${topic}（第${count}版）`;
+      showToast(`生成成功！已自动避免前${count > 1 ? count - 1 : 0}版的重复`);
     }
   } catch (err) {
     showToast('生成失败：' + err.message);
   } finally {
     setLoading(false);
   }
+}
+
+// ---- 提取调整摘要 ----
+function extractChangeHint(msg) {
+  if (msg.includes('例子') || msg.includes('举例')) return '，已更换新例子';
+  if (msg.includes('金句')) return '，已更新金句';
+  if (msg.includes('深度') || msg.includes('语言')) return '，已调整语言深度';
+  if (msg.includes('互动')) return '，已增加互动环节';
+  if (msg.includes('视频')) return '，已更新视频素材';
+  if (msg.includes('更') || msg.includes('换')) return '，已按你的要求修改';
+  return '';
 }
 
 // ---- Chat ----
@@ -188,11 +253,16 @@ async function sendChatMessage() {
     typing.remove();
     if (content) {
       state.chatHistory.push({ role: 'assistant', content });
-      addChatMessage(content, 'assistant');
       if (content.includes('# ') && content.length > 200) {
+        // 完整课程内容 → 显示在中间预览区
         state.currentLesson = content;
         renderPreview(content);
-        showToast('课程已更新');
+        // 聊天框只回一句简洁确认
+        const changeHint = extractChangeHint(msg);
+        addChatMessage(`✅ 调整完毕${changeHint}，已更新到预览区`, 'assistant');
+      } else {
+        // 简短回复 → 正常显示在聊天框
+        addChatMessage(content, 'assistant');
       }
     }
   } catch (err) {
@@ -202,44 +272,7 @@ async function sendChatMessage() {
 }
 
 // ---- Video Search ----
-async function searchVideos() {
-  const kw = els.videoKeyword.value.trim();
-  if (!kw) { showToast('请输入搜索关键词'); return; }
-  els.videoResults.innerHTML = '<div style="padding:12px;color:#666;font-size:13px">搜索中...</div>';
-  try {
-    const resp = await fetch(`https://search.bilibili.com/all?keyword=${encodeURIComponent(kw)}`);
-    const html = await resp.text();
-    const videos = [];
-    const re = /<a[^>]*title="([^"]+)"[^>]*href="(\/\/www\.bilibili\.com\/video\/[A-Za-z0-9]+)/g;
-    const seen = new Set(); let m;
-    while ((m = re.exec(html)) !== null && videos.length < 5) {
-      const title = m[1], link = 'https:' + m[2];
-      if (!seen.has(link) && title.length > 4) { seen.add(link); videos.push({ title, link, duration:'?' }); }
-    }
-    if (videos.length) {
-      els.videoResults.innerHTML = videos.map(v =>
-        `<div class="video-item" data-url="${v.link}" data-title="${escapeHtml(v.title)}" data-dur="${v.duration}">
-          <div class="v-title">${escapeHtml(v.title)}</div><div class="v-meta">时长: ${v.duration}</div>
-        </div>`).join('');
-      els.videoResults.querySelectorAll('.video-item').forEach(item => {
-        item.onclick = () => selectVideo(item.dataset.title, item.dataset.dur, item.dataset.url);
-      });
-    } else {
-      els.videoResults.innerHTML = '<div style="padding:12px;color:#999;font-size:13px">未找到相关视频</div>';
-    }
-  } catch {
-    els.videoResults.innerHTML = '<div style="padding:12px;color:#c0392b;font-size:13px">搜索失败（可能需要翻墙）</div>';
-  }
-}
-
-function selectVideo(title, dur, url) {
-  els.videoTitle.textContent = title;
-  els.videoDuration.textContent = dur;
-  els.videoSelected.style.display = 'block';
-  els.videoResults.innerHTML = '';
-  els.videoKeyword.value = '';
-  showToast('已选择视频');
-}
+// 已移除：改为手动输入视频素材
 
 // ---- Templates ----
 function loadTemplates() {
@@ -257,7 +290,6 @@ function applyTemplate(id) {
   if (!t) return;
   els.topicInput.value = t.defaults.theme || '';
   els.coreTruthInput.value = t.defaults.core_truth || '';
-  if (t.defaults.video_title) selectVideo(t.defaults.video_title, t.defaults.video_duration || '', t.defaults.video_url || '');
   els.templateGrid.querySelectorAll('.template-card').forEach(c => c.classList.remove('active'));
   els.templateGrid.querySelector(`[data-id="${id}"]`)?.classList.add('active');
   showToast(`已应用模板：${t.name}`);
@@ -353,7 +385,7 @@ function escapeHtml(t) { const d = document.createElement('div'); d.textContent 
 function newCourse() {
   state.currentLesson = ''; state.currentTheme = ''; state.chatHistory = [];
   els.topicInput.value = ''; els.coreTruthInput.value = '';
-  els.videoTitle.textContent = ''; els.videoDuration.textContent = ''; els.videoSelected.style.display = 'none';
+  els.videoTitle.value = ''; els.videoUrl.value = ''; els.videoDesc.value = '';
   els.emptyState.style.display = 'flex'; els.markdownBody.style.display = 'none'; els.markdownBody.innerHTML = '';
   els.previewStatus.textContent = '等待生成...';
   els.chatMessages.innerHTML = '<div class="chat-msg ai"><div class="msg-bubble">你好！我是你的课程策划助手。</div></div>';
@@ -376,8 +408,6 @@ els.settingsBtn.onclick = () => {
 };
 els.generateBtn.onclick = generateLesson;
 els.topicInput.onkeydown = e => { if (e.key === 'Enter') generateLesson(); };
-els.searchVideoBtn.onclick = searchVideos;
-els.videoKeyword.onkeydown = e => { if (e.key === 'Enter') searchVideos(); };
 els.sendChatBtn.onclick = sendChatMessage;
 els.chatInput.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(); } };
 els.clearChatBtn.onclick = () => { state.chatHistory = []; els.chatMessages.innerHTML = '<div class="chat-msg ai"><div class="msg-bubble">对话已清空</div></div>'; };
@@ -386,6 +416,12 @@ els.saveBtn.onclick = saveCourse;
 els.exportBtn.onclick = exportDocx;
 els.copyBtn.onclick = () => { if (state.currentLesson) { navigator.clipboard.writeText(state.currentLesson); showToast('已复制'); } };
 els.navToggle.onclick = () => els.sidebar.classList.toggle('collapsed');
+els.clearVideoBtn.onclick = () => {
+  els.videoTitle.value = '';
+  els.videoUrl.value = '';
+  els.videoDesc.value = '';
+  showToast('已清除视频素材');
+};
 
 // ---- Init ----
 loadTemplates();
