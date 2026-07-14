@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>心性教育 · 课程策划系统</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- API Key Modal -->
+  <div class="modal-overlay" id="apiKeyModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>🔑 设置 DeepSeek API Key</h2>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">本系统直接在你的浏览器中运行，需要 DeepSeek API Key 来生成课程内容。</p>
+        <div class="input-group">
+          <label>API Key</label>
+          <input type="password" class="input" id="apiKeyInput" placeholder="sk-..." />
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-primary" id="saveApiKeyBtn">保存并开始使用</button>
+        </div>
+        <p class="modal-hint">
+          没有 Key？<a href="https://platform.deepseek.com/api_keys" target="_blank">点击此处免费申请</a>（注册即送额度）
+        </p>
+        <p class="modal-hint" style="color:#27ae60">✅ Key 仅保存在你的浏览器中，不会上传到任何服务器</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Nav -->
+  <nav class="topnav">
+    <div class="nav-left">
+      <button class="nav-toggle" id="navToggle" title="切换侧边栏">☰</button>
+      <div class="logo">
+        <span class="logo-icon">❤️</span>
+        <span class="logo-text">心性教育课程策划</span>
+      </div>
+    </div>
+    <div class="nav-actions">
+      <button class="btn btn-ghost" id="settingsBtn">⚙️ 设置</button>
+      <button class="btn btn-ghost" id="newBtn">✨ 新建</button>
+      <button class="btn btn-primary" id="saveBtn">💾 保存</button>
+      <button class="btn btn-accent" id="exportBtn">📄 导出DOCX</button>
+    </div>
+  </nav>
+
+  <!-- Main Layout -->
+  <div class="main">
+
+    <!-- Left Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-section">
+        <div class="section-label">输入主题</div>
+        <input type="text" class="input" id="topicInput" placeholder="例：品德修养、诚信、坚持..." />
+        <div class="row">
+          <select class="select" id="gradeSelect">
+            <option value="小学">小学</option>
+            <option value="初中" selected>初中</option>
+            <option value="高中">高中</option>
+            <option value="通用">通用</option>
+          </select>
+          <button class="btn btn-primary btn-sm" id="generateBtn">生成课程</button>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="section-label">核心道理（可选）</div>
+        <textarea class="textarea" id="coreTruthInput" rows="2" placeholder="一句话说明这节课想传达的核心理念..."></textarea>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="section-label">引入视频</div>
+        <div class="row">
+          <input type="text" class="input" id="videoKeyword" placeholder="搜索关键词..." />
+          <button class="btn btn-ghost btn-sm" id="searchVideoBtn">🔍</button>
+        </div>
+        <div class="video-selected" id="videoSelected" style="display:none">
+          <div class="video-title" id="videoTitle"></div>
+          <div class="video-duration" id="videoDuration"></div>
+        </div>
+        <div class="video-results" id="videoResults"></div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="section-label">模板库</div>
+        <div class="template-grid" id="templateGrid"></div>
+      </div>
+    </aside>
+
+    <!-- Center: Course Preview -->
+    <main class="center-pane">
+      <div class="preview-toolbar">
+        <span class="preview-status" id="previewStatus">等待生成...</span>
+        <div class="preview-actions">
+          <button class="btn-text" id="copyBtn">📋 复制</button>
+        </div>
+      </div>
+      <div class="preview-area" id="previewArea">
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon">📚</div>
+          <div class="empty-title">开始策划一节心性教育课</div>
+          <div class="empty-desc">在左侧输入主题，或从模板库选择一个模板</div>
+        </div>
+        <div class="markdown-body" id="markdownBody" style="display:none"></div>
+      </div>
+    </main>
+
+    <!-- Right: Chat -->
+    <aside class="chat-pane" id="chatPane">
+      <div class="chat-header">
+        <div class="chat-title">🤖 AI 助手</div>
+        <button class="btn-text btn-sm" id="clearChatBtn">清空</button>
+      </div>
+      <div class="chat-messages" id="chatMessages">
+        <div class="chat-msg ai">
+          <div class="msg-bubble">你好！我是你的课程策划助手。你可以让我：<br/>
+          • 调整某层讲解的例子<br/>
+          • 增加互动环节<br/>
+          • 修改语言深度<br/>
+          • 更换引入视频描述<br/>
+          试试说：「把第三层讲得更贴近学生生活」</div>
+        </div>
+      </div>
+      <div class="chat-input-area">
+        <textarea class="chat-input" id="chatInput" placeholder="输入调整要求... (Enter发送, Shift+Enter换行)" rows="2"></textarea>
+        <button class="btn btn-primary btn-send" id="sendChatBtn">发送</button>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
